@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Media Link Collector",
+  "version": "1.0",
+  "description": "Collects all image, video, and audio URLs from the current page",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "icons/icon1.png"
+    }
+  }
+}
+

@@ -1,0 +1,18 @@
+body {
+  font-family: Arial, sans-serif;
+  min-width: 250px;
+  padding: 10px;
+}
+h1 { font-size: 1.2em; margin-bottom: 8px; }
+h2 { font-size: 1.0em; margin: 6px 0; }
+ul { list-style: disc inside; padding-left: 0; }
+li { margin-bottom: 4px; }
+a {
+  color: #0645AD;
+  text-decoration: none;
+  word-break: break-all;
+}
+a:hover {
+  text-decoration: underline;
+}
+
