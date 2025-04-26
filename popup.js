@@ -1,57 +1,47 @@
 
 function collectMediaLinks() {
 
-  const images = Array.from(document.querySelectorAll('img'))
-                      .map(img => img.src)
-                      .filter(src => src);
-
-
-  const videos = Array.from(document.querySelectorAll('video'))
-    .flatMap(video => {
-      let srcs = [];
-      if (video.src) srcs.push(video.src);
-      video.querySelectorAll('source').forEach(source => {
-        if (source.src) srcs.push(source.src);
-      });
+  function extractSources(selector) {
+    return Array.from(document.querySelectorAll(selector)).flatMap(el => {
+      const srcs = [];
+      if (el.src) srcs.push(el.src);
+      el.querySelectorAll('source').forEach(s => { if (s.src) srcs.push(s.src); });
       return srcs;
     });
+  }
 
-
-  const audios = Array.from(document.querySelectorAll('audio'))
-    .flatMap(audio => {
-      let srcs = [];
-      if (audio.src) srcs.push(audio.src);
-      audio.querySelectorAll('source').forEach(source => {
-        if (source.src) srcs.push(source.src);
-      });
-      return srcs;
-    });
-
+  const images = extractSources('img');
+  const videos = extractSources('video');
+  const audios = extractSources('audio');
 
   return { images, videos, audios };
 }
 
-
 document.addEventListener('DOMContentLoaded', async () => {
 
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-
-  let results = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
+  const results = await chrome.scripting.executeScript({
+    target: { tabId: tab.id, allFrames: true },
     func: collectMediaLinks
   });
 
+  const media = results.reduce((agg, frame) => {
+    agg.images.push(...frame.result.images);
+    agg.videos.push(...frame.result.videos);
+    agg.audios.push(...frame.result.audios);
+    return agg;
+  }, { images: [], videos: [], audios: [] });
 
-  const media = results[0].result;
-  const { images, videos, audios } = media;
+  media.images = Array.from(new Set(media.images));
+  media.videos = Array.from(new Set(media.videos));
+  media.audios = Array.from(new Set(media.audios));
 
-
-  function addLinksToList(id, urls) {
+  function addLinks(id, urls) {
     const ul = document.getElementById(id);
     urls.forEach(url => {
-      let li = document.createElement('li');
-      let a = document.createElement('a');
+      const li = document.createElement('li');
+      const a = document.createElement('a');
       a.href = url;
       a.textContent = url;
       a.target = '_blank';
@@ -60,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-
-  addLinksToList('audioLinks', audios);
+  addLinks('imageLinks', media.images);
+  addLinks('videoLinks', media.videos);
+  addLinks('audioLinks', media.audios);
 });
-
